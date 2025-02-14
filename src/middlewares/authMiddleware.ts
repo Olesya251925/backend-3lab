@@ -1,32 +1,34 @@
-import { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-
-interface AuthRequest extends Request {
-  user?: { id: string; role: string }; // Определите здесь свойства, которые будут в user
-}
+import type { AuthRequest } from "../types/auth";
 
 export const authMiddleware = (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
-) => {
-  const token = req.header("Authorization")?.split(" ")[1];
-
-  if (!token) {
-    return res
-      .status(401)
-      .json({ message: "Нет токена, авторизация запрещена" });
-  }
-
+): void => {
   try {
+    const authHeader = req.header("Authorization");
+    if (!authHeader) {
+      res.status(401).json({ message: "Нет токена, авторизация запрещена" });
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      res.status(401).json({ message: "Неверный формат токена" });
+      return;
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as {
       id: string;
       role: string;
     };
-    req.user = decoded; // Теперь не используется any
+
+    req.user = decoded;
     next();
   } catch (error) {
-    console.error(error); // Добавлено для логирования ошибки
+    console.error(error);
     res.status(401).json({ message: "Неверный токен" });
   }
 };

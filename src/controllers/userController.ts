@@ -1,16 +1,23 @@
-import { Request, Response } from "express";
+import type { Response } from "express";
 import User from "../models/User";
+import type { AuthRequest } from "../types/auth";
 
-// Расширяем интерфейс Request для добавления user
-interface AuthRequest extends Request {
-  user: {
-    id: string;
-  };
-}
-
-export const getProfile = async (req: AuthRequest, res: Response) => {
+export const getProfile = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
   try {
+    if (!req.user?.id) {
+      res.status(401).json({ message: "Пользователь не авторизован" });
+      return;
+    }
+
     const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      res.status(404).json({ message: "Пользователь не найден" });
+      return;
+    }
+
     res.json(user);
   } catch (error) {
     console.error(error);
@@ -18,9 +25,22 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteUser = async (req: AuthRequest, res: Response) => {
+export const deleteUser = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
   try {
-    await User.findByIdAndDelete(req.user.id);
+    if (!req.user?.id) {
+      res.status(401).json({ message: "Пользователь не авторизован" });
+      return;
+    }
+
+    const deletedUser = await User.findByIdAndDelete(req.user.id);
+    if (!deletedUser) {
+      res.status(404).json({ message: "Пользователь не найден" });
+      return;
+    }
+
     res.json({ message: "Пользователь удален" });
   } catch (error) {
     console.error(error);
