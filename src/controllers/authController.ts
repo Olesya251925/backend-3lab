@@ -64,12 +64,10 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const { login, password } = req.body;
     const user = await User.findOne({ login });
 
-    // Проверка на наличие пользователя и правильность пароля
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Неверные учетные данные" });
     }
 
-    // Генерация токена
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "secret",
@@ -77,18 +75,17 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     );
     return res.json({ token });
   } catch (error) {
-    console.error(error); // Логирование ошибки для диагностики
+    console.error(error);
     return res.status(500).json({ message: "Ошибка входа" });
   }
 };
 
-// Получение данных пользователя по логину
 export const getUserByLogin = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
   try {
-    const { login } = req.query; // Получаем логин из параметров запроса
+    const { login } = req.query;
 
     if (!login) {
       return res.status(400).json({ message: "Логин не предоставлен" });
@@ -99,7 +96,6 @@ export const getUserByLogin = async (
       return res.status(404).json({ message: "Пользователь не найден" });
     }
 
-    // Возвращаем необходимые данные о пользователе
     return res.json({
       firstName: user.firstName,
       lastName: user.lastName,
@@ -112,19 +108,18 @@ export const getUserByLogin = async (
   }
 };
 
-// Жесткое удаление пользователя
 export const deleteUser = async (
   req: Request,
   res: Response,
 ): Promise<Response> => {
   try {
-    const { login } = req.body; // Получаем логин из тела запроса
+    const { login } = req.body;
 
     if (!login) {
       return res.status(400).json({ message: "Логин не предоставлен" });
     }
 
-    const user = await User.findOneAndDelete({ login }); // Найти и удалить пользователя
+    const user = await User.findOneAndDelete({ login });
     if (!user) {
       return res.status(404).json({ message: "Пользователь не найден" });
     }
