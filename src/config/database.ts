@@ -2,9 +2,11 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(
-      process.env.MONGO_URI || "mongodb://localhost:27017/backendWeb",
-    );
+    if (!process.env.MONGO_URI) {
+      throw new Error("Переменная MONGO_URI не задана в .env файле");
+    }
+
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB подключен");
   } catch (error) {
     console.error("Ошибка подключения к MongoDB:", error);

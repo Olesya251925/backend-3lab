@@ -10,30 +10,25 @@ export const register = async (
   try {
     const { firstName, lastName, login, password, role } = req.body;
 
-    // Проверка наличия всех необходимых полей
     if (!firstName || !lastName || !login || !password || !role) {
       return res
         .status(400)
         .json({ message: "Все поля обязательны для заполнения" });
     }
 
-    // Проверка на допустимость роли
     if (!["student", "teacher"].includes(role)) {
       return res.status(400).json({ message: "Недопустимая роль" });
     }
 
-    // Проверка на уникальность логина
     const existingUser = await User.findOne({ login });
     if (existingUser) {
       return res.status(400).json({ message: "Логин уже занят" });
     }
 
     if (!login.trim()) {
-      // Проверка на пустую строку
       return res.status(400).json({ message: "Логин не может быть пустым" });
     }
 
-    // Хеширование пароля
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       firstName,
@@ -43,7 +38,6 @@ export const register = async (
       role,
     });
 
-    // Сохранение нового пользователя
     await newUser.save();
     return res.status(201).json({ message: "Пользователь зарегистрирован" });
   } catch (error) {
