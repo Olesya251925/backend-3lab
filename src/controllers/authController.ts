@@ -62,11 +62,16 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       return res.status(401).json({ message: "Неверные учетные данные" });
     }
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET не определен в файле .env");
+    }
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "secret",
+      process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
+
     return res.json({ token });
   } catch (error) {
     console.error(error);
