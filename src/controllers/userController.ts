@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import User from "../models/User";
+import User from "../models/user";
 import type { AuthRequest } from "../types/auth";
 
 export const getProfile = async (

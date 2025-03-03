@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import connectDB from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
+import courseRoutes from "./routes/courseRoutes";
 
 dotenv.config();
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/courses", courseRoutes);
 
 // Обработка ошибок
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
