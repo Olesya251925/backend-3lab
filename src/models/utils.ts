@@ -1,10 +1,10 @@
-import { Counter } from "./counter"; // Импорт модели счетчика
+import { Counter } from "./counter";
 
 export async function getNextCourseId() {
   const updatedCounter = await Counter.findOneAndUpdate(
     {},
     { $inc: { sequenceValue: 1 } },
-    { new: true, upsert: true }, // Создает документ, если его нет
+    { new: true, upsert: true },
   );
   return updatedCounter.sequenceValue;
 }

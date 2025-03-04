@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import slugify from "slugify";
 import Course from "../models/course";
-import { getNextCourseId } from "../models/utils"; // Импорт функции получения следующего courseId
+import { getNextCourseId } from "../models/utils";
 
 // Получить все курсы
 export const getCourses = asyncHandler(async (req: Request, res: Response) => {

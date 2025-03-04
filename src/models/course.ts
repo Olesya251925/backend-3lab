@@ -34,7 +34,6 @@ const CourseSchema = new Schema<ICourse>({
   createdAt: { type: Date, default: Date.now, required: true },
 });
 
-// Автоматически генерируем slug перед сохранением
 CourseSchema.pre("save", function (next) {
   if (this.isModified("title")) {
     this.slug = slugify(this.title, { lower: true, strict: true });
