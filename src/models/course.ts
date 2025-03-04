@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 import slugify from "slugify";
 
 export interface ICourse extends Document {
+  courseId: number;
   title: string;
   slug: string;
   description?: string;
@@ -15,6 +16,7 @@ export interface ICourse extends Document {
 }
 
 const CourseSchema = new Schema<ICourse>({
+  courseId: { type: Number, unique: true },
   title: { type: String, required: true },
   slug: { type: String, required: true, unique: true },
   description: { type: String },

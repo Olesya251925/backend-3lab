@@ -2,8 +2,9 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import slugify from "slugify";
 import Course from "../models/course";
+import { getNextCourseId } from "../models/utils"; // Импорт функции получения следующего courseId
 
-// Получить все курсы (сортировка, пагинация, фильтр, поиск)
+// Получить все курсы
 export const getCourses = asyncHandler(async (req: Request, res: Response) => {
   try {
     const {
@@ -60,18 +61,15 @@ export const getCourses = asyncHandler(async (req: Request, res: Response) => {
 
 // Получить курс по ID
 export const getCourseById = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const course = await Course.findById(req.params.id);
-      if (!course) {
-        res.status(404).json({ message: "Курс не найден" });
-        return;
-      }
-      res.json(course);
-    } catch (error) {
-      console.error("Ошибка при получении курса:", error);
-      res.status(500).json({ message: "Ошибка сервера" });
+  async (req: Request, res: Response) => {
+    const course = await Course.findOne({ courseId: req.params.id });
+
+    if (!course) {
+      res.status(404).json({ message: "Курс не найден" });
+      return;
     }
+
+    res.json(course);
   },
 );
 
@@ -97,7 +95,11 @@ export const createCourse = asyncHandler(
         return;
       }
 
+      // Получение следующего courseId
+      const courseId = await getNextCourseId();
+
       const newCourse = new Course({
+        courseId,
         title,
         slug,
         description,
@@ -120,48 +122,40 @@ export const createCourse = asyncHandler(
 // Обновить курс по ID
 export const updateCourse = asyncHandler(
   async (req: Request, res: Response) => {
-    try {
-      const updatedData = { ...req.body };
+    const updatedData = { ...req.body };
 
-      if (updatedData.title) {
-        updatedData.slug = slugify(updatedData.title, {
-          lower: true,
-          strict: true,
-        });
-      }
-
-      const updatedCourse = await Course.findByIdAndUpdate(
-        req.params.id,
-        updatedData,
-        { new: true, runValidators: true },
-      );
-
-      if (!updatedCourse) {
-        res.status(404).json({ message: "Курс не найден" });
-        return;
-      }
-
-      res.json(updatedCourse);
-    } catch (error) {
-      console.error("Ошибка при обновлении курса:", error);
-      res.status(500).json({ message: "Ошибка сервера" });
+    if (updatedData.title) {
+      updatedData.slug = slugify(updatedData.title, {
+        lower: true,
+        strict: true,
+      });
     }
+
+    const updatedCourse = await Course.findOneAndUpdate(
+      { courseId: req.params.id },
+      updatedData,
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedCourse) {
+      res.status(404).json({ message: "Курс не найден" });
+      return;
+    }
+
+    res.json(updatedCourse);
   },
 );
 
 // Удалить курс по ID
 export const deleteCourse = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const course = await Course.findByIdAndDelete(req.params.id);
-      if (!course) {
-        res.status(404).json({ message: "Курс не найден" });
-        return;
-      }
-      res.json({ message: "Курс успешно удален" });
-    } catch (error) {
-      console.error("Ошибка при удалении курса:", error);
-      res.status(500).json({ message: "Ошибка сервера" });
+  async (req: Request, res: Response) => {
+    const course = await Course.findOneAndDelete({ courseId: req.params.id });
+
+    if (!course) {
+      res.status(404).json({ message: "Курс не найден" });
+      return;
     }
+
+    res.json({ message: "Курс успешно удален" });
   },
 );
