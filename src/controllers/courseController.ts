@@ -3,6 +3,10 @@ import { Request, Response } from "express";
 import slugify from "slugify";
 import Course from "../models/course";
 import { getNextCourseId } from "../models/utils";
+import fs from "fs";
+import path from "path";
+import sharp from "sharp";
+import moment from "moment-timezone";
 
 // Получить все курсы
 export const getCourses = asyncHandler(async (req: Request, res: Response) => {
@@ -11,7 +15,7 @@ export const getCourses = asyncHandler(async (req: Request, res: Response) => {
       search = "",
       category,
       page = "1",
-      limit = "10",
+      limit = "3",
       sortBy = "createdAt",
       sortOrder = "asc",
     } = req.query as Record<string, string>;
@@ -95,8 +99,42 @@ export const createCourse = asyncHandler(
         return;
       }
 
-      // Получение следующего courseId
       const courseId = await getNextCourseId();
+
+      if (!fs.existsSync(image)) {
+        res.status(400).json({ message: "Файл изображения не найден" });
+        return;
+      }
+
+      const imageName = `${moment().tz("Asia/Kemerovo").format("YYYY-MM-DDTHH-mm-ss")}.png`;
+      const uploadDir = path.join(__dirname, "..", "uploads");
+
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir);
+      }
+
+      const imagePath = path.join(uploadDir, imageName);
+
+      const watermarkPath = path.join(
+        __dirname,
+        "..",
+        "assets",
+        "watermark.png",
+      );
+
+      const resizedWatermarkBuffer = await sharp(watermarkPath)
+        .resize({ width: 100 })
+        .toBuffer();
+
+      await sharp(image)
+        .resize(800)
+        .composite([
+          {
+            input: resizedWatermarkBuffer,
+            gravity: "southeast",
+          },
+        ])
+        .toFile(imagePath);
 
       const newCourse = new Course({
         courseId,
@@ -104,7 +142,7 @@ export const createCourse = asyncHandler(
         slug,
         description,
         price,
-        image,
+        image: `/uploads/${imageName}`,
         category,
         level,
         author,
