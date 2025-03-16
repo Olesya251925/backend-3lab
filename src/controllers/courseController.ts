@@ -187,13 +187,29 @@ export const updateCourse = asyncHandler(
 // Удалить курс по ID
 export const deleteCourse = asyncHandler(
   async (req: Request, res: Response) => {
-    const course = await Course.findOneAndDelete({ courseId: req.params.id });
+    try {
+      const course = await Course.findOneAndDelete({ courseId: req.params.id });
 
-    if (!course) {
-      res.status(404).json({ message: "Курс не найден" });
-      return;
+      if (!course) {
+        res.status(404).json({ message: "Курс не найден" });
+        return;
+      }
+
+      const imagePath = path.join(
+        __dirname,
+        "..",
+        "uploads",
+        path.basename(course.image),
+      );
+
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+
+      res.json({ message: "Курс успешно удален" });
+    } catch (error) {
+      console.error("Ошибка при удалении курса:", error);
+      res.status(500).json({ message: "Ошибка сервера" });
     }
-
-    res.json({ message: "Курс успешно удален" });
   },
 );

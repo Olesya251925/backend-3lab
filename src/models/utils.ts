@@ -1,10 +1,8 @@
-import { Counter } from "./counter";
+import Course from "../models/course";
 
 export async function getNextCourseId() {
-  const updatedCounter = await Counter.findOneAndUpdate(
-    {},
-    { $inc: { sequenceValue: 1 } },
-    { new: true, upsert: true },
-  );
-  return updatedCounter.sequenceValue;
+  const lastCourse = await Course.findOne()
+    .sort({ courseId: -1 })
+    .select("courseId");
+  return lastCourse ? lastCourse.courseId + 1 : 1;
 }
