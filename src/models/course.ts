@@ -12,6 +12,8 @@ export interface ICourse extends Document {
   level: "beginner" | "intermediate" | "advanced";
   published: boolean;
   author: string;
+  tags: number[];
+  isFavorited: boolean;
   createdAt: Date;
 }
 
@@ -31,6 +33,8 @@ const CourseSchema = new Schema<ICourse>({
   },
   published: { type: Boolean, default: false },
   author: { type: String, required: true },
+  tags: [{ type: Number }],
+  isFavorited: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now, required: true },
 });
 

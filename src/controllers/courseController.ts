@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import moment from "moment-timezone";
+import Tag from "../models/tagModel";
 
 // Получить все курсы
 export const getCourses = asyncHandler(async (req: Request, res: Response) => {
@@ -81,8 +82,17 @@ export const getCourseById = asyncHandler(
 export const createCourse = asyncHandler(
   async (req: Request, res: Response) => {
     try {
-      const { title, description, price, image, category, level, author } =
-        req.body;
+      const {
+        title,
+        description,
+        price,
+        image,
+        category,
+        level,
+        author,
+        tags,
+        isFavorite,
+      } = req.body;
 
       if (!title || !price || !image || !category || !author) {
         res.status(400).json({ message: "Обязательные поля не заполнены" });
@@ -128,12 +138,7 @@ export const createCourse = asyncHandler(
 
       await sharp(image)
         .resize(800)
-        .composite([
-          {
-            input: resizedWatermarkBuffer,
-            gravity: "southeast",
-          },
-        ])
+        .composite([{ input: resizedWatermarkBuffer, gravity: "southeast" }])
         .toFile(imagePath);
 
       const newCourse = new Course({
@@ -146,6 +151,8 @@ export const createCourse = asyncHandler(
         category,
         level,
         author,
+        tags: tags || [],
+        isFavorited: isFavorite !== undefined ? isFavorite : false,
       });
 
       await newCourse.save();
@@ -211,5 +218,80 @@ export const deleteCourse = asyncHandler(
       console.error("Ошибка при удалении курса:", error);
       res.status(500).json({ message: "Ошибка сервера" });
     }
+  },
+);
+
+// Добавить курс в избранное
+export const addToFavorites = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    console.log(`Запрос на добавление курса в избранное с ID: ${id}`);
+
+    // Ищем курс по его courseId
+    const course = await Course.findOne({ courseId: id });
+    if (!course) {
+      console.log("Курс не найден");
+      res.status(404).json({ message: "Курс не найден" });
+      return; // Завершаем выполнение функции, если курс не найден
+    }
+
+    // Устанавливаем курс в избранное
+    course.isFavorited = true;
+    await course.save();
+
+    console.log("Курс добавлен в избранное:", course);
+    res.json({ message: "Курс добавлен в избранное", course });
+  },
+);
+
+// Удалить курс из избранного
+export const removeFromFavorites = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    console.log(`Запрос на удаление курса из избранного с ID: ${id}`);
+
+    const course = await Course.findOne({ courseId: id });
+    if (!course) {
+      console.log("Курс не найден");
+      res.status(404).json({ message: "Курс не найден" });
+      return;
+    }
+
+    course.isFavorited = false;
+    await course.save();
+
+    console.log("Курс удален из избранного:", course);
+    res.json({ message: "Курс удален из избранного", course });
+  },
+);
+
+export const getCourseWithTags = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    console.log("Функция вызвана!"); // Проверка вызова функции
+
+    const { id } = req.params;
+
+    const course = await Course.findOne({ courseId: id });
+
+    if (!course) {
+      res.status(404).json({ message: "Курс не найден" });
+      return;
+    }
+
+    // Получаем названия тегов по их tagId
+    const tags = await Tag.find({ tagId: { $in: course.tags } });
+
+    // Выводим теги в терминал
+    console.log("Полученные теги:");
+    tags.forEach((tag) => {
+      console.log(`TagId: ${tag.tagId}, Name: ${tag.name}`);
+    });
+
+    // Объединяем информацию о курсе и тегах
+    const courseWithTags = { ...course.toObject(), tags };
+
+    res.json(courseWithTags);
   },
 );

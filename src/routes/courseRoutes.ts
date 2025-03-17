@@ -9,5 +9,12 @@ router.get("/:id", asyncHandler(courseController.getCourseById));
 router.post("/", asyncHandler(courseController.createCourse));
 router.put("/:id", asyncHandler(courseController.updateCourse));
 router.delete("/:id", asyncHandler(courseController.deleteCourse));
+router.get("/:id/tags", asyncHandler(courseController.getCourseWithTags));
+
+router.post("/favorite/:id", asyncHandler(courseController.addToFavorites));
+router.delete(
+  "/favorite/:id",
+  asyncHandler(courseController.removeFromFavorites),
+);
 
 export default router;
