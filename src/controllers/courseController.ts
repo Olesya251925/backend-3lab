@@ -51,7 +51,6 @@ export const getCourses = asyncHandler(async (req: Request, res: Response) => {
       .limit(currentLimit)
       .skip(skip);
 
-    // Возвращаем общее количество и курсы
     res.json({
       totalCount: count,
       currentPage,
@@ -228,15 +227,13 @@ export const addToFavorites = asyncHandler(
 
     console.log(`Запрос на добавление курса в избранное с ID: ${id}`);
 
-    // Ищем курс по его courseId
     const course = await Course.findOne({ courseId: id });
     if (!course) {
       console.log("Курс не найден");
       res.status(404).json({ message: "Курс не найден" });
-      return; // Завершаем выполнение функции, если курс не найден
+      return;
     }
 
-    // Устанавливаем курс в избранное
     course.isFavorited = true;
     await course.save();
 
@@ -269,8 +266,6 @@ export const removeFromFavorites = asyncHandler(
 
 export const getCourseWithTags = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    console.log("Функция вызвана!"); // Проверка вызова функции
-
     const { id } = req.params;
 
     const course = await Course.findOne({ courseId: id });
@@ -280,16 +275,13 @@ export const getCourseWithTags = asyncHandler(
       return;
     }
 
-    // Получаем названия тегов по их tagId
     const tags = await Tag.find({ tagId: { $in: course.tags } });
 
-    // Выводим теги в терминал
     console.log("Полученные теги:");
     tags.forEach((tag) => {
       console.log(`TagId: ${tag.tagId}, Name: ${tag.name}`);
     });
 
-    // Объединяем информацию о курсе и тегах
     const courseWithTags = { ...course.toObject(), tags };
 
     res.json(courseWithTags);
