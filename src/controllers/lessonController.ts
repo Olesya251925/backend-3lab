@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Lesson from "../models/lesson";
-import Counter from "../models/counterModel";
+import Counter from "../models/counter";
 import Course from "../models/course";
 
 // Получить все уроки

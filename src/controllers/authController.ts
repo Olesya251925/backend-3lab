@@ -29,8 +29,17 @@ export const register = async (
       return res.status(400).json({ message: "Логин не может быть пустым" });
     }
 
+    const users = await User.find({});
+    const usedIds = users.map((user) => user.id);
+
+    let newId = 1;
+    while (usedIds.includes(newId)) {
+      newId++;
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
+      id: newId,
       firstName,
       lastName,
       login,
@@ -39,7 +48,9 @@ export const register = async (
     });
 
     await newUser.save();
-    return res.status(201).json({ message: "Пользователь зарегистрирован" });
+    return res
+      .status(201)
+      .json({ message: "Пользователь зарегистрирован", user: newUser });
   } catch (error) {
     if (error instanceof Error) {
       console.error("Ошибка при регистрации:", error.message);
