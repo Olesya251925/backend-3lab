@@ -10,18 +10,15 @@ import {
 
 const router = express.Router();
 
-// Определяем типы для обработчиков
 type AsyncRequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => Promise<void>;
 
-// Приводим контроллеры к нужному типу
 router.get("/", asyncHandler(getLessons as AsyncRequestHandler));
 router.get("/:id", asyncHandler(getLessonById as AsyncRequestHandler));
 router.post("/", asyncHandler(createLesson as AsyncRequestHandler));
 router.put("/:id", asyncHandler(updateLesson as AsyncRequestHandler));
 router.delete("/:id", asyncHandler(deleteLesson as AsyncRequestHandler));
-
 export default router;

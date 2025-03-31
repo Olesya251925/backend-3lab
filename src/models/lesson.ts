@@ -1,20 +1,22 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ILesson extends Document {
+  id: number;
   title: string;
   content?: string;
   videoUrl?: string;
-  course: mongoose.Types.ObjectId;
+  courseId: number;
   order?: number;
   createdAt: Date;
 }
 
 const LessonSchema: Schema = new Schema(
   {
+    id: { type: Number, required: true, unique: true },
     title: { type: String, required: true },
     content: { type: String },
     videoUrl: { type: String },
-    course: { type: Schema.Types.ObjectId, ref: "Course", required: true },
+    courseId: { type: Number, required: true },
     order: { type: Number },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
