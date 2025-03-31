@@ -131,4 +131,60 @@ Each course can have multiple tags (one-to-many relationship).
 
 This request returns the course along with detailed tag information, including tag names.
 
+# CHAPTER 3 - LESSONS AND COMMENTS
+
+## Lesson Management
+
+### Lesson Model
+
+**Fields:**
+
+- **title** (required) - Lesson title
+- **content** (optional) - Text content
+- **videoUrl** (optional) - Video link
+- **course** (required) - Course reference
+- **order** (optional) - Lesson order
+- **createdAt** - Creation date
+
+### API Endpoints
+
+1. **Create Lesson**  
+   `POST http://localhost:3000/api/lessons`
+
+2. **Get All Lessons**  
+   `GET http://localhost:3000/api/lessons`
+
+3. **Get Lesson by ID**  
+   `GET http://localhost:3000/api/lessons/:id`
+
+4. **Update Lesson**  
+   `PUT http://localhost:3000/api/lessons/:id`
+
+5. **Delete Lesson**  
+   `DELETE http://localhost:3000/api/lessons/:id`
+
+---
+
+## Comment System
+
+**Comment Model:**
+
+- **user** (required) - User reference
+- **lesson** (required) - Lesson reference
+- **text** (required) - Comment text (≤255 chars)
+
+### API Endpoints
+
+1. **Create Comment**  
+   `POST http://localhost:3000/api/comments`
+
+2. **Get Comments by Lesson**  
+   `GET http://localhost:3000/api/comments/:lesson_id`
+
+3. **Update Comment**  
+   `PUT http://localhost:3000/api/comments/:id`
+
+4. **Delete Comment**  
+   `DELETE http://localhost:3000/api/comments/:id`
+
 To run the project, you need to install the necessary dependencies and start the project with the command `yarn run dev`.
