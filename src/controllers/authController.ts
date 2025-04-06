@@ -2,18 +2,14 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
+import { isRegistrationDataValid } from "../utils/validation";
 
-export const register = async (
-  req: Request,
-  res: Response,
-): Promise<Response> => {
+export const register = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { firstName, lastName, login, password, role } = req.body;
 
-    if (!firstName || !lastName || !login || !password || !role) {
-      return res
-        .status(400)
-        .json({ message: "Все поля обязательны для заполнения" });
+    if (!isRegistrationDataValid(firstName, lastName, login, password, role)) {
+      return res.status(400).json({ message: "Все поля обязательны для заполнения" });
     }
 
     if (!["student", "teacher"].includes(role)) {
@@ -48,15 +44,11 @@ export const register = async (
     });
 
     await newUser.save();
-    return res
-      .status(201)
-      .json({ message: "Пользователь зарегистрирован", user: newUser });
+    return res.status(201).json({ message: "Пользователь зарегистрирован", user: newUser });
   } catch (error) {
     if (error instanceof Error) {
       console.error("Ошибка при регистрации:", error.message);
-      return res
-        .status(500)
-        .json({ message: "Ошибка регистрации", error: error.message });
+      return res.status(500).json({ message: "Ошибка регистрации", error: error.message });
     } else {
       console.error("Неизвестная ошибка:", error);
       return res.status(500).json({ message: "Ошибка регистрации" });
@@ -77,11 +69,9 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       throw new Error("JWT_SECRET не определен в файле .env");
     }
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" },
-    );
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     return res.json({ token });
   } catch (error) {
@@ -90,10 +80,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-export const getUserByLogin = async (
-  req: Request,
-  res: Response,
-): Promise<Response> => {
+export const getUserByLogin = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { login } = req.query;
 
@@ -118,10 +105,7 @@ export const getUserByLogin = async (
   }
 };
 
-export const deleteUser = async (
-  req: Request,
-  res: Response,
-): Promise<Response> => {
+export const deleteUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { login } = req.body;
 
